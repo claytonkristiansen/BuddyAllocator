@@ -100,6 +100,31 @@ private:
 	// also, the original header needs to be corrected
     BlockHeader* SplitRec(BlockHeader *b, int _length);
 
+    int NearestPowTwo(int x)
+    {
+        static const unsigned long long t[6] = {
+            0xFFFFFFFF00000000ull,
+            0x00000000FFFF0000ull,
+            0x000000000000FF00ull,
+            0x00000000000000F0ull,
+            0x000000000000000Cull,
+            0x0000000000000002ull};
+
+        int y = (((x & (x - 1)) == 0) ? 0 : 1);
+        int j = 32;
+        int i;
+
+        for (i = 0; i < 6; i++)
+        {
+            int k = (((x & t[i]) == 0) ? 0 : j);
+            y += k;
+            x >>= k;
+            j >>= 1;
+        }
+
+        return y;
+    }
+
 
 public:
 	BuddyAllocator (int _basic_block_size, int _total_memory_length); 
@@ -127,7 +152,7 @@ public:
         {
             return false;
         }
-        int index = log2(b->block_size / basic_block_size);
+        int index = NearestPowTwo(b->block_size / basic_block_size);
         BlockHeader *curr = FreeList[index].head;
         while(curr != nullptr)
         {
