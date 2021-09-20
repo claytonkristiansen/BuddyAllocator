@@ -2,6 +2,7 @@
 #define _BuddyAllocator_h_
 #include <iostream>
 #include <vector>
+#include <math.h>
 using namespace std;
 typedef unsigned int uint;
 
@@ -11,7 +12,12 @@ class BlockHeader{
 public:
 	// think about what else should be included as member variables
 	int block_size;  // size of the block
-	BlockHeader* next; // pointer to the next block
+	BlockHeader *next; // pointer to the next block
+    BlockHeader()
+    {
+        next = nullptr;
+        block_size = 0;
+    }
 };
 
 class LinkedList{
@@ -19,12 +25,50 @@ class LinkedList{
 public:
 	BlockHeader* head;		// you need a head of the list
 public:
-	void insert (BlockHeader* b){	// adds a block to the list
+    LinkedList()
+    {
+        head = nullptr;
+    }
+    LinkedList(BlockHeader *b)
+    {
+        head = b;
+    }
 
+	void insert (BlockHeader* b)	// adds a block to the list
+    {
+        if(head == nullptr)
+        {
+            head = b;
+            head->next = nullptr;
+            return;
+        }
+        b->next = head->next;
+        head->next = b;
 	}
 
-	void remove (BlockHeader* b){  // removes a block from the list
+	void remove (BlockHeader* b)  // removes a block from the list
+    {
+        if(head == nullptr)
+        {
+            return;
+        }
 
+        if(head == b)
+        {
+            head = head->next;
+            return;
+        }
+
+        BlockHeader *curr = head;
+        while(curr->next != nullptr)
+        {
+            if(curr->next == b)
+            {
+                curr->next = b->next;
+                break;
+            }
+            curr = curr->next;
+        }
 	}
 };
 
@@ -32,6 +76,7 @@ public:
 class BuddyAllocator{
 private:
 	/* declare more member variables as necessary */
+    char *mem;
 	vector<LinkedList> FreeList;
 	int basic_block_size;
 	int total_memory_size;
@@ -53,6 +98,7 @@ private:
 	BlockHeader* split (BlockHeader* block);
 	// splits the given block by putting a new header halfway through the block
 	// also, the original header needs to be corrected
+    BlockHeader* SplitRec(BlockHeader *b, int _length);
 
 
 public:
@@ -74,6 +120,27 @@ public:
 	int free(char* _a); 
 	/* Frees the section of physical memory previously allocated 
 	   using ’my_malloc’. Returns 0 if everything ok. */ 
+
+    bool isFree(BlockHeader *b)
+    {
+        if(!ValidMemoryLocation(b))
+        {
+            return false;
+        }
+        int index = log2(b->block_size / basic_block_size);
+        BlockHeader *curr = FreeList[index].head;
+        while(curr != nullptr)
+        {
+            if(curr == b)
+            {
+                return true;
+            }
+            curr = curr->next;
+        }
+        return false;
+    }
+
+    bool ValidMemoryLocation(BlockHeader* block);
    
 	void printlist ();
 	/* Mainly used for debugging purposes and running short test cases */
