@@ -10,6 +10,7 @@ class Ackerman {
 public:
     int Recurse(int a, int b);
     string get_time_diff(struct timeval * tp1, struct timeval * tp2);
+    double my_get_time_diff(struct timeval *tp1, struct timeval *tp2);
     void test(BuddyAllocator* _ma);
 };
 

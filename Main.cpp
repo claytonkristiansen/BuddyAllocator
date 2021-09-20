@@ -1,6 +1,8 @@
 #include "Ackerman.h"
 #include "BuddyAllocator.h"
 #include <cstring>
+#include <fstream>
+#include <iostream>
 
 void easytest(BuddyAllocator *ba)
 {

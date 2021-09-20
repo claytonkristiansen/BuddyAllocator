@@ -1,0 +1,4 @@
+n,m,Result,Time Taken,Num alloc/free cycles
+3,8,2045,138838,2785999
+46.15,172233
+3,8,2045,139751,2785999

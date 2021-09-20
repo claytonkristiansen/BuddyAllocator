@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 #include <stdlib.h>
+#include <fstream>
 using namespace std;
 
 string Ackerman::get_time_diff(struct timeval *tp1, struct timeval *tp2)
@@ -23,12 +24,27 @@ string Ackerman::get_time_diff(struct timeval *tp1, struct timeval *tp2)
     return ss.str();
 }
 
+double Ackerman::my_get_time_diff(struct timeval *tp1, struct timeval *tp2)
+{
+    /* Returns a string containing the difference, in seconds and micro seconds, between two timevals. */
+    long sec = tp2->tv_sec - tp1->tv_sec;
+    long musec = tp2->tv_usec - tp1->tv_usec;
+    double ms = 0;
+    ms += 1000 * sec;
+    ms += ((double)musec) / 1000;
+    return ms;
+}
+
 void Ackerman::test(BuddyAllocator *_ba)
 {
     /* This is function repeatedly asks the user for the two parameters "n" and "m" to pass to the ackerman function, and invokes the function.
      Before and after the invocation of the ackerman function, the value of the wallclock is taken, and the elapsed time for the computation
      of the ackerman function is output.
   */
+
+    ofstream fout("data.csv");
+    fout << "n" << "," << "m" << "," << "Result" << "," << "Time Taken" << "," << "Num alloc/free cycles" << "\n";
+
     ba = _ba;
     while (true)
     {
@@ -52,7 +68,12 @@ void Ackerman::test(BuddyAllocator *_ba)
         cout << "Time taken: " << get_time_diff(&tp_start, &tp_end) << endl;
         cout << "Number of allocate/free cycles: " << this->num_allocations << endl
              << endl;
+            
+        fout << n << "," << m << "," << result << "," << my_get_time_diff(&tp_start, &tp_end) << "," << this->num_allocations << "\n";
+
+        
     }
+    fout.close();
 }
 
 int Ackerman::Recurse(int a, int b)

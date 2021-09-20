@@ -2,8 +2,7 @@
 #include <iostream>
 using namespace std;
 
-int NearestPowTwo(double input);
-bool ValidMemoryLocation(BlockHeader* block);
+bool ValidMemoryLocation(BlockHeader *block);
 
 BuddyAllocator::BuddyAllocator(int _basic_block_size, int _total_memory_length)
 {
@@ -34,56 +33,58 @@ BuddyAllocator::~BuddyAllocator()
 char *BuddyAllocator::alloc(int _length)
 {
     double base = ((double)(_length + sizeof(BlockHeader))) / ((double)basic_block_size);
-    int index = NearestPowTwo(base);
-    for(; FreeList[index].head == nullptr && index <= FreeList.size(); ++index) {}
+    int index = NearestPowTwo(ceil(base));
+    for (; FreeList[index].head == nullptr && index <= FreeList.size(); ++index)
+    {
+    }
     BlockHeader *allocatedMemory = SplitRec(FreeList[index].head, _length);
     FreeList[log2(allocatedMemory->block_size / basic_block_size)].remove(allocatedMemory);
-    return reinterpret_cast<char*>(reinterpret_cast<long>(allocatedMemory) + sizeof(BlockHeader));
+    return reinterpret_cast<char *>(reinterpret_cast<long>(allocatedMemory) + sizeof(BlockHeader));
 }
 
 int BuddyAllocator::free(char *_a)
 {
-    BlockHeader *block = reinterpret_cast<BlockHeader*>(reinterpret_cast<long>(_a) - sizeof(BlockHeader));
+    BlockHeader *block = reinterpret_cast<BlockHeader *>(reinterpret_cast<long>(_a) - sizeof(BlockHeader));
 
-    if(!ValidMemoryLocation(block))
+    if (!ValidMemoryLocation(block))
     {
         return 1;
     }
 
     BlockHeader *buddy = getbuddy(block);
-    if(isFree(buddy))
+    if (isFree(buddy))
     {
         merge(block, buddy);
     }
     else
     {
-        FreeList[log2(block->block_size / basic_block_size)].insert(block);
+        FreeList[NearestPowTwo(block->block_size / basic_block_size)].insert(block);
     }
     return 0;
 }
 
-BlockHeader* BuddyAllocator::merge (BlockHeader* block1, BlockHeader* block2)
+BlockHeader *BuddyAllocator::merge(BlockHeader *block1, BlockHeader *block2)
 {
-    int indexRem = log2(block2->block_size / basic_block_size);
+    int indexRem = NearestPowTwo(block2->block_size / basic_block_size);
     int indexAdd = indexRem + 1;
     block1->block_size *= 2;
     FreeList[indexRem].remove(block1);
     FreeList[indexRem].remove(block2);
     FreeList[indexAdd].insert(block1);
     BlockHeader *buddy = getbuddy(block1);
-    if(isFree(buddy))
+    if (isFree(buddy))
     {
         merge(block1, buddy);
     }
     return block1;
 }
 
-BlockHeader* BuddyAllocator::split(BlockHeader* block)
+BlockHeader *BuddyAllocator::split(BlockHeader *block)
 {
-    int indexRem = log2(block->block_size / basic_block_size);
+    int indexRem = NearestPowTwo(block->block_size / basic_block_size);
     int indexAdd = indexRem - 1;
     block->block_size /= 2;
-    BlockHeader* block2 = getbuddy(block);
+    BlockHeader *block2 = getbuddy(block);
     block2->block_size = block->block_size;
     FreeList[indexRem].remove(block);
     FreeList[indexAdd].insert(block);
@@ -96,10 +97,9 @@ void BuddyAllocator::printlist()
     cout << "Printing the Freelist in the format \"[index] (block size) : # of blocks\"" << endl;
     for (int i = 0; i < FreeList.size(); i++)
     {
-        if(FreeList[i].head != nullptr)
+        if (FreeList[i].head != nullptr)
         {
-            cout << "[" << i << "] (" << FreeList[i].head->block_size/*((1 << i) * basic_block_size)*/ << ") : "; // block size at index should always be 2^i * bbs
-
+            cout << "[" << i << "] (" << FreeList[i].head->block_size /*((1 << i) * basic_block_size)*/ << ") : "; // block size at index should always be 2^i * bbs
         }
         else
         {
@@ -124,29 +124,15 @@ void BuddyAllocator::printlist()
     }
 }
 
-int NearestPowTwo(double input)
+BlockHeader *BuddyAllocator::getbuddy(BlockHeader *addr)
 {
-    if(input <= 1)
-    {
-        return 0;
-    }
-    double expon = log2(input);
-    if (expon > (int)expon)
-    {
-        return (int)expon + 1;
-    }
-    return (int)expon;
-}
-
-BlockHeader* BuddyAllocator::getbuddy (BlockHeader * addr)
-{
-    BlockHeader *block2 = reinterpret_cast<BlockHeader*>(((reinterpret_cast<long>(addr) - reinterpret_cast<long>(mem)) ^ addr->block_size) + reinterpret_cast<long>(mem));
+    BlockHeader *block2 = reinterpret_cast<BlockHeader *>(((reinterpret_cast<long>(addr) - reinterpret_cast<long>(mem)) ^ addr->block_size) + reinterpret_cast<long>(mem));
     return block2;
 }
 
-BlockHeader* BuddyAllocator::SplitRec(BlockHeader *b, int _length)
+BlockHeader *BuddyAllocator::SplitRec(BlockHeader *b, int _length)
 {
-    if((_length + sizeof(BlockHeader)) * 2 <= b->block_size && b->block_size > basic_block_size)
+    if ((_length + sizeof(BlockHeader)) * 2 <= b->block_size && b->block_size > basic_block_size)
     {
         split(b);
         SplitRec(b, _length);
@@ -154,9 +140,9 @@ BlockHeader* BuddyAllocator::SplitRec(BlockHeader *b, int _length)
     return b;
 }
 
-bool BuddyAllocator::ValidMemoryLocation(BlockHeader* block)
+bool BuddyAllocator::ValidMemoryLocation(BlockHeader *block)
 {
-    if((reinterpret_cast<long>(mem) <= reinterpret_cast<long>(block) && reinterpret_cast<long>(block) < reinterpret_cast<long>(mem) + total_memory_size))
+    if ((reinterpret_cast<long>(mem) <= reinterpret_cast<long>(block) && reinterpret_cast<long>(block) < reinterpret_cast<long>(mem) + total_memory_size))
     {
         return true;
     }
