@@ -37,6 +37,11 @@ char *BuddyAllocator::alloc(int _length)
     for (; FreeList[index].head == nullptr && index <= FreeList.size(); ++index)
     {
     }
+    if(index >= FreeList.size())
+    {
+        std::cout << "OVERALLOCATION!!!!!!!!!!!!!!!!!!\n";
+        return nullptr;
+    }
     BlockHeader *allocatedMemory = SplitRec(FreeList[index].head, _length);
     FreeList[log2(allocatedMemory->block_size / basic_block_size)].remove(allocatedMemory);
     return reinterpret_cast<char *>(reinterpret_cast<long>(allocatedMemory) + sizeof(BlockHeader));

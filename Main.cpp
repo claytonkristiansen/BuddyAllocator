@@ -1,5 +1,6 @@
 #include "Ackerman.h"
 #include "BuddyAllocator.h"
+#include <unistd.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -27,13 +28,21 @@ void easytest(BuddyAllocator *ba)
 
 int main(int argc, char **argv)
 {
-    char *_arr = new char[128];
-    char *_arr2 = &_arr[1];
-    _arr2[0] = 69;
-
-
-
     int basic_block_size = 128, memory_length = 128 * 1024 * 1024;
+
+    char option;
+    while((option = getopt(argc, argv, ":b:s:")) != -1)
+    {
+        switch(option)
+        {
+            case 'b':
+                basic_block_size = atoi(optarg);
+                break;
+            case 's':
+                memory_length = atoi(optarg);
+                break;
+        }
+    }
 
     // create memory manager
     BuddyAllocator *allocator = new BuddyAllocator(basic_block_size, memory_length);

@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/memtest",
-            "args": [],
+            "args": [],//["-b", "64", "-s", "1024"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
